@@ -15,7 +15,12 @@ dir_nam = '../data/'
 files_nam = c('_expression_data.csv', '_clinical_data.csv', '_vst_data.csv')
 res_dir = '../outputs/'
 genemapping_file <- paste(dir_nam, 'TCGA-UCEC_geneSymbol_ensembleID_mapping.csv')
-hmr2_genes_mapping_file <- paste(dir_nam, 'HMRdatabase2_00.xlsx - GENES.csv')
+hmr2_genes_mapping <- paste(dir_nam, 'HMRdatabase2_00.xlsx - GENES.csv')
+hmr2_genes = hmr2_genes_mapping
+
+## output directory
+output_dir = '../outputs/'
+vst_hmr2_filtered_data_file <- paste(output_dir, 'vst_hmr2_filtered_data.csv')
 
 ## Load data
 read_exp_file <- function(file){
@@ -70,6 +75,14 @@ vst_norm <- function(count_data){
     return(vst_prim)
 }
 
+# Normalization
+ucec_vst_data = vst_norm(ucec_prim_exp_data)
+head(ucec_vst_data,2)
 
+# Genes filtering from HMR2
+hmr2_genes <- hmr2_genes$GENE.NAME
+ucec_vst_data = as.data.frame(ucec_vst_data[intersect(rownames(ucec_vst_data), hmr2_genes), ])
+print(dim(ucec_vst_data))
 
-
+# Save the output
+write.csv(ucec_vst_data, file=vst_hmr2_filtered_data_file, quote=F)
