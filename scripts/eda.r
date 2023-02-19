@@ -14,24 +14,39 @@ output_dir = '../outputs/'
 
 ## input data
 dir_nam = '../data/'
-files_nam = c('_expression_data.csv', '_clinical_data.csv', '_vst_data.csv')
+files_nam = c('TCGA-UCEC_expression_data.csv', 'TCGA-UCEC_clinical_data.csv')
 res_dir = '../outputs/'
-genemapping_file <- paste(dir_nam, 'TCGA-UCEC_geneSymbol_ensembleID_mapping.csv')
-hmr2_genes_mapping <- paste(dir_nam, 'HMRdatabase2_00.xlsx - GENES.csv')
-hmr2_genes = hmr2_genes_mapping
-vst_hmr2_filtered_data_file <- paste(output_dir, 'vst_hmr2_filtered_data.csv')
-
-# load existing functions
-source('../R-Scripts/data_preprocessing.r')
-
+#genemapping_file <- paste(dir_nam, 'TCGA-UCEC_geneSymbol_ensembleID_mapping.csv', sep='')
+#hmr2_genes_mapping <- paste(dir_nam, 'HMRdatabase2_00_GENES.csv', sep='')
+vst_hmr2_filtered_data_file <- paste(output_dir, 'vst_hmr2_filtered_data.csv', sep='')
 
 ## Load Data
+read_exp_file <- function(file){
+    exp_data <- read.csv(file)
+    row.names(exp_data) <- exp_data$barcode
+    exp_data$barcode <- NULL
+    exp_data <- t(exp_data)
+    print(dim(exp_data))
+    return(exp_data)
+}
+
+read_clinical_file <- function(file){
+    clinical_data <- read.csv(file)
+    row.names(clinical_data) <- clinical_data$barcode
+    clinical_data$barcode <- NULL
+    print(dim(clinical_data))
+    return(clinical_data)    
+}
+
 ucec_vst_data <- read.csv(vst_hmr2_filtered_data_file)
+rownames(ucec_vst_data) <- ucec_vst_data$X
+ucec_vst_data$X <- NULL
+
 ucec_clinical_data <- read_clinical_file(paste(dir_nam, files_nam[2], sep=''))
 ucec_exp_data <- read_exp_file(paste(dir_nam, files_nam[1], sep=''))
 
-## PCA 
-pca_df = merge(t(ucec_exp_data[rownames(ucec_vst_data),]) , ucec_clinical_data["sample_type"], by="row.names") 
+## PCA
+pca_df = merge(t(ucec_exp_data[rownames(ucec_vst_data),]), ucec_clinical_data["sample_type"], by="row.names") 
 row.names(pca_df) = pca_df$Row.names
 pca_df = pca_df[, -1]
 print(dim(pca_df))
@@ -96,3 +111,4 @@ autoplot(pca_res2, data = pca_df2, colour = 'detailed_sample_type', frame = TRUE
 dev.off()
 
 autoplot(pca_res2, data = pca_df2, colour = 'detailed_sample_type', frame = TRUE)
+print("EDA Done. Plots are stored in output folder!")
