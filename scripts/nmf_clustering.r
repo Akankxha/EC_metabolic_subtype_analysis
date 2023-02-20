@@ -14,22 +14,42 @@ output_dir = '../outputs/'
 
 ## input data
 dir_nam = '../data/'
-files_nam = c('_expression_data.csv', '_clinical_data.csv', '_vst_data.csv')
+files_nam = c('TCGA-UCEC_expression_data.csv', 'TCGA-UCEC_clinical_data.csv')
 res_dir = '../outputs/'
-genemapping_file <- paste(dir_nam, 'TCGA-UCEC_geneSymbol_ensembleID_mapping.csv')
-hmr2_genes_mapping <- paste(dir_nam, 'HMRdatabase2_00.xlsx - GENES.csv')
-hmr2_genes = hmr2_genes_mapping
-vst_hmr2_filtered_data_file <- paste(output_dir, 'vst_hmr2_filtered_data.csv')
+genemapping_file <- paste(dir_nam, 'TCGA-UCEC_geneSymbol_ensembleID_mapping.csv', sep='')
+hmr2_genes_mapping <- paste(dir_nam, 'HMRdatabase2_00_GENES.csv', sep='')
+vst_hmr2_filtered_data_file <- paste(output_dir, 'vst_hmr2_filtered_data.csv', sep='')
+ucec_prim_clinical_data_file <- paste(output_dir, 'ucec_prim_clinical_data.csv', sep='')
 
-# load existing functions
-source('../R-Scripts/data_preprocessing.r')
+# parameter
+num_run_nmf = 50
+num_run_nmf = 2
 
 
 ## Load Data
+read_exp_file <- function(file){
+    exp_data <- read.csv(file)
+    row.names(exp_data) <- exp_data$barcode
+    exp_data$barcode <- NULL
+    exp_data <- t(exp_data)
+    print(dim(exp_data))
+    return(exp_data)
+}
+
+read_clinical_file <- function(file){
+    clinical_data <- read.csv(file)
+    row.names(clinical_data) <- clinical_data$barcode
+    clinical_data$barcode <- NULL
+    print(dim(clinical_data))
+    return(clinical_data)
+}
+
 ucec_vst_data <- read.csv(vst_hmr2_filtered_data_file)
+rownames(ucec_vst_data) <- ucec_vst_data$X
+ucec_vst_data$X <- NULL
+
 ucec_clinical_data <- read_clinical_file(paste(dir_nam, files_nam[2], sep=''))
 ucec_exp_data <- read_exp_file(paste(dir_nam, files_nam[1], sep=''))
-
 
 ## MAD Score computations
 compute_sort_mad <- function(vst_data, top = 1500){
@@ -61,7 +81,7 @@ nmf_run <- function(data, rank , method = 'brunet', seed_meth = "random", n_run 
     return(res)
 }
 
-ucec_rank_estimation_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2:7, seed_meth =123456, n_run = 50)
+ucec_rank_estimation_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2:7, seed_meth =123456, n_run = num_run_nmf)
 
 ucec_rank_estimation_res_summary <- t(as.data.frame(summary(ucec_rank_estimation_res)))
 write.csv(ucec_rank_estimation_res_summary,file=paste(res_dir,'rank_estimation_summary.csv', sep=''),quote=F)
@@ -102,7 +122,7 @@ consensusmap(ucec_rank_estimation_res)
 # Close the PNG file:
 dev.off()
 
-ucec_method_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2, method = nmfAlgorithm()[1:6], seed_meth =123456, n_run = 50)
+ucec_method_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2, method = nmfAlgorithm()[1:6], seed_meth =123456, n_run = num_run_nmf)
 
 t(compare(ucec_method_res))
 write.csv(t(compare(ucec_method_res)),file=paste(res_dir, 'algo_compare_summary.csv', sep=''),quote=F)
@@ -132,7 +152,7 @@ consensusmap(ucec_method_res)
 # Close the PNG file:
 dev.off()
 
-ucec_best_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2, method = 'offset', seed_meth ='random', n_run = 50)
+ucec_best_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2, method = 'offset', seed_meth ='random', n_run = num_run_nmf)
 
 ucec_best_res_summary <- t(as.data.frame(summary(ucec_best_res)))
 #write.csv(t(ucec_best_res_summary),file=paste(res_dir,'best_res_summary.csv', sep=''),quote=F)
@@ -141,8 +161,12 @@ ucec_best_res_summary
 
 plot(ucec_best_res)
 
+ucec_prim_clinical_data <-ucec_clinical_data[rownames(ucec_clinical_data[ucec_clinical_data['sample_type']=='Primary Tumor',]),]
 ucec_prim_clinical_data$nmf_cluster <- NA
 ucec_prim_clinical_data$Subtypes <- NA
+
+ucec_prim_exp_data <- ucec_exp_data[, rownames(ucec_clinical_data[ucec_clinical_data['sample_type'] == 'Primary Tumor',])]
+
 ucec_cp <- consensusmap(ucec_best_res, , annCol= ucec_clinical_data[colnames(ucec_prim_exp_data),
             ][c('clinical_stage', 'histological_type', 'histological_grade')], 
             main='UCEC Consensus Matrix (Rank = 2)', tracks =c(), Rowv = FALSE)
@@ -163,16 +187,6 @@ ucec_prim_clinical_data[colnames(ucec_vst_data[lapply(cut(ucec_cp$Rowv,0.5)$lowe
 print(table(ucec_prim_clinical_data['nmf_cluster']))                                                           
 
 print(table(ucec_prim_clinical_data['Subtypes']))          
-
-m = matrix(rnorm(100), nrow = 10)
-ha = rowAnnotation(foo = 1:10, show_legend = FALSE)
-ht = Heatmap(m) + ha
-lgd = color_mapping_legend(ha@anno_list[[1]]@color_mapping)
-# you can also construct a Legend object by
-lgd = Legend(title = "foo", 
-    col_fun = circlize::colorRamp2(c(0, 10), c("white", "red")),
-    at = seq(0, 10, by = 2))
-draw(ht, annotation_legend_list = lgd, annotation_legend_side = "left")
 
 old_hist_type = c("Endometrioid endometrial adenocarcinoma", "Serous endometrial adenocarcinoma", 
                   "Mixed serous and endometrioid" )
@@ -248,4 +262,5 @@ basismap(ucec_best_res)
 # Close the PNG file:
 dev.off()
 
-
+# Save the output
+write.csv(ucec_prim_clinical_data, file=ucec_prim_clinical_data_file, quote=F)
