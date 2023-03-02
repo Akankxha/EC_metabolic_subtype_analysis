@@ -6,14 +6,12 @@ Metabolic subtype study for endomaterial cancer
 
 ## Available Scripts
 `data_preprocessing.r` : Gene experssion data filtering and VST normalization
-
 `eda.r` : Exploratory data analysis including PCA
-
 `nmf_clustering.r` : NMF and Consensus clustering
-
+`clinical_profiles.r` : Survival analysis and fisher exact test
 `degs.r` : Differencial experssion analysis
-
-``
+`prognostic_genes.r` : Univariate cox regression analysis
+`validation.r` : Validation of subtypes with GEO Datasets
 
  
 # Title
