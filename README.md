@@ -2,7 +2,7 @@
 Metabolic subtype study for endomaterial cancer
 
 ## Workflow
-![alt text](https://github.com/akankxha/EC_metabolic_subtype_analysis/tree/main/Figure1.tiff?raw=true)
+![alt text](https://github.com/akankxha/EC_metabolic_subtype_analysis/blob/main/Figure1.tiff?raw=true)
 
 ## Available Scripts
 `data_preprocessing.r` : Gene experssion data filtering and VST normalization
@@ -11,8 +11,11 @@ Metabolic subtype study for endomaterial cancer
 
 `nmf_clustering.r` : NMF and Consensus clustering
 
-`degs.r` : 
+`degs.r` : Differencial experssion analysis
 
+``
+
+ 
 # Title
 Identification and Characterization of Metabolic Subtypes of Endometrial Cancer using a Systems-Level Approach
 
