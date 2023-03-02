@@ -1,3 +1,4 @@
+# Import the libraries
 library(dplyr)
 library(NMF)
 library(vcd)
@@ -6,8 +7,7 @@ library(ggstatsplot)
 library(ggplot2)
 library(DESeq2)
 library(ggfortify)
-library(glmnet) # package for regularization in GLMs
-library(repr)
+library(ggthemes)
 
 ## Output Dir
 output_dir = '../outputs/'
@@ -81,22 +81,21 @@ nmf_run <- function(data, rank , method = 'brunet', seed_meth = "random", n_run 
     return(res)
 }
 
+# Rank Estimation
 ucec_rank_estimation_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2:7, seed_meth =123456, n_run = num_run_nmf)
 
 ucec_rank_estimation_res_summary <- t(as.data.frame(summary(ucec_rank_estimation_res)))
 write.csv(ucec_rank_estimation_res_summary,file=paste(res_dir,'rank_estimation_summary.csv', sep=''),quote=F)
-ucec_rank_estimation_res_summary
+#ucec_rank_estimation_res_summary
 
-library(ggthemes)
 
-options(repr.plot.width = 10, repr.plot.height = 8)
 ucec_rank_summ_plot <-  plot(ucec_rank_estimation_res) + theme_base(base_size = 20) +
                              #theme_classic(base_size = 20) + 
                              theme(axis.text = element_text(face="bold"), plot.title = element_text(face="bold"),
                                   plot.caption = element_text(face = "bold")) + 
                                   labs(title = "(a). NMF Rank Estimation")
                     
-ucec_rank_summ_plot
+#ucec_rank_summ_plot
 
 ucec_rank_summ_plot_file <- file.path(paste(res_dir, 'rank_summ_plot.tiff', sep=''))
 
@@ -122,9 +121,9 @@ consensusmap(ucec_rank_estimation_res)
 # Close the PNG file:
 dev.off()
 
+# Experimentation with NMF
 ucec_method_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2, method = nmfAlgorithm()[1:6], seed_meth =123456, n_run = num_run_nmf)
-
-t(compare(ucec_method_res))
+#t(compare(ucec_method_res))
 write.csv(t(compare(ucec_method_res)),file=paste(res_dir, 'algo_compare_summary.csv', sep=''),quote=F)
 
 plot(ucec_method_res)
@@ -152,11 +151,13 @@ consensusmap(ucec_method_res)
 # Close the PNG file:
 dev.off()
 
+
+# Run the nmf with optimal number of cluster and best method
 ucec_best_res = nmf_run(ucec_vst_data[ucec_top_mad_genes,], 2, method = 'offset', seed_meth ='random', n_run = num_run_nmf)
 
 ucec_best_res_summary <- t(as.data.frame(summary(ucec_best_res)))
 #write.csv(t(ucec_best_res_summary),file=paste(res_dir,'best_res_summary.csv', sep=''),quote=F)
-ucec_best_res_summary
+#ucec_best_res_summary
 #compare(ucec_best_res)
 
 plot(ucec_best_res)
@@ -188,6 +189,7 @@ print(table(ucec_prim_clinical_data['nmf_cluster']))
 
 print(table(ucec_prim_clinical_data['Subtypes']))          
 
+# Generate the consensus plot with clinical information                                                      
 old_hist_type = c("Endometrioid endometrial adenocarcinoma", "Serous endometrial adenocarcinoma", 
                   "Mixed serous and endometrioid" )
 new_hist_type = c("Endometrioid", "Serous", "Mixed")
@@ -195,7 +197,6 @@ hist_map = setNames(new_hist_type, old_hist_type)
 ucec_clinical_data$histological_type <- hist_map[ucec_clinical_data$histological_type]
 print(dim(ucec_clinical_data))
 
-options(repr.plot.width = 7, repr.plot.height = 7)
 consensusmap(ucec_best_res,
         annCol=ucec_clinical_data[colnames(ucec_prim_exp_data),][c('clinical_stage', 'histological_type', 'histological_grade')],
         annRow=ucec_clinical_data[colnames(ucec_prim_exp_data),][c('clinical_stage', 'histological_type', 'histological_grade')],
@@ -204,7 +205,6 @@ consensusmap(ucec_best_res,
         info = FALSE,
         Rowv = FALSE,
         labRow = NA,
-        color = "Blues",
         fontsize = 14
         )
 
@@ -214,50 +214,16 @@ ucec_best_consensus_plot_file <- file.path(paste(res_dir, 'best_consensus_plot.t
 tiff(ucec_best_consensus_plot_file, height = 6, width = 6, units = 'in', res= 300)
 
 # Print your heatmap
-consensusmap(ucec_best_res, annCol= ucec_clinical_data[colnames(ucec_prim_exp_data),][c('clinical_stage',
-            'histological_type', 'histological_grade')], main='UCEC Consensus Plot', tracks =c(),
-            Rowv = FALSE)
-
-# Close the PNG file:
-dev.off()
-
-# basis components
-basismap(ucec_best_res, subsetRow=TRUE)
-# mixture coefficients
-coefmap(ucec_best_res)
-
-# basis components
-basismap(ucec_best_res)
-
-ucec_best_basis_plot_file <- file.path(paste(res_dir, 'best_basis_plot.tiff', sep=''))
-
-# Open a PNG file - width and height arguments control the size of the output
-tiff(ucec_best_basis_plot_file, height = 6, width = 6, units = 'in', res=300)
-
-# Print your heatmap
-basismap(ucec_best_res, subsetRow=TRUE)
-
-# Close the PNG file:
-dev.off()
-
-ucec_best_coef_plot_file <- file.path(paste(res_dir, 'best_coef_plot.tiff', sep=''))
-
-# Open a PNG file - width and height arguments control the size of the output
-tiff(ucec_best_coef_plot_file, height = 6, width = 6, units = 'in', res=300)
-
-# Print your heatmap
-coefmap(ucec_best_res)
-
-# Close the PNG file:
-dev.off()
-
-ucec_best_full_basis_plot_file <- file.path(paste(res_dir, 'best_full_basis_plot.tiff', sep=''))
-
-# Open a PNG file - width and height arguments control the size of the output
-tiff(ucec_best_full_basis_plot_file, height = 6, width = 6, units = 'in', res=300)
-
-# Print your heatmap
-basismap(ucec_best_res)
+consensusmap(ucec_best_res,
+        annCol=ucec_clinical_data[colnames(ucec_prim_exp_data),][c('clinical_stage', 'histological_type', 'histological_grade')],
+        annRow=ucec_clinical_data[colnames(ucec_prim_exp_data),][c('clinical_stage', 'histological_type', 'histological_grade')],
+        main='(b). Consensus Matrix', 
+        tracks=c(),
+        info = FALSE,
+        Rowv = FALSE,
+        labRow = NA,
+        fontsize = 14
+        )
 
 # Close the PNG file:
 dev.off()

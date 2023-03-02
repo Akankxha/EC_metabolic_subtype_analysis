@@ -1,3 +1,4 @@
+# Import the libraries
 library(dplyr)
 library(NMF)
 library(vcd)
@@ -6,9 +7,6 @@ library(ggstatsplot)
 library(ggplot2)
 library(DESeq2)
 library(ggfortify)
-library(glmnet) # package for regularization in GLMs
-library(repr)
-
 
 ## input data
 dir_nam = '../data/'
@@ -21,7 +19,7 @@ hmr2_genes_mapping_file <- paste(dir_nam, 'HMRdatabase2_00_GENES.csv', sep='')
 output_dir = '../outputs/'
 vst_hmr2_filtered_data_file <- paste(output_dir, 'vst_hmr2_filtered_data.csv', sep='')
 
-## Load data
+## Function for reading the data
 read_exp_file <- function(file){
     exp_data <- read.csv(file)
     row.names(exp_data) <- exp_data$barcode
@@ -39,6 +37,7 @@ read_clinical_file <- function(file){
     return(clinical_data)    
 }
 
+# Load the data
 ucec_exp_data <- read_exp_file(paste(dir_nam, files_nam[1], sep=''))
 #head(ucec_exp_data, 3)
 
@@ -62,6 +61,7 @@ ucec_prim_clinical_data <-ucec_clinical_data[rownames(ucec_clinical_data[ucec_cl
 #print(dim(ucec_prim_exp_data))
 #print(dim(ucec_prim_clinical_data))
 
+# Function for vst normalisation
 vst_norm <- function(count_data){
     ## Pre-filtering the dataset 
     keep = rowSums(count_data >= 10) >= 5
@@ -82,7 +82,7 @@ ucec_vst_data = vst_norm(ucec_prim_exp_data)
 hmr2_genes = read.csv(hmr2_genes_mapping_file)
 hmr2_genes <- hmr2_genes$GENE.NAME
 ucec_vst_data = as.data.frame(ucec_vst_data[intersect(rownames(ucec_vst_data), hmr2_genes), ])
-cat("VST data dimension:", dim(ucec_vst_data), sep=" ")
+#cat("VST data dimension:", dim(ucec_vst_data), sep=" ")
 
 # Save the output
 write.csv(ucec_vst_data, file=vst_hmr2_filtered_data_file, quote=F)
