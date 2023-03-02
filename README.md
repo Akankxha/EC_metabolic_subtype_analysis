@@ -2,7 +2,7 @@
 Metabolic subtype study for endomaterial cancer
 
 ## Workflow
-![alt text](https://github.com/akankxha/EC_metabolic_subtype_analysis/blob/main/Figure1.tiff?raw=true)
+![alt text](https://github.com/Akankxha/EC_metabolic_subtype_analysis/blob/main/Figure1.tiff)
 
 ## Available Scripts
 `data_preprocessing.r` : Gene experssion data filtering and VST normalization
