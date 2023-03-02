@@ -19,7 +19,7 @@ Endometrial cancer (EC) is the most common gynecological cancer worldwide. Under
 
 <img src="https://github.com/Akankxha/EC_metabolic_subtype_analysis/blob/main/Figure1.jpg" width="600" />
 
-**Keywords -** metabolic reprogramming; endometrial cancer; transcriptome; systems biology; re-porter metabolites
+**Keywords -** metabolic reprogramming; endometrial cancer; transcriptome; systems biology; reporter metabolites
 
 
 **Question?** For any query related to the code/work, Please reach out to us at [akansha.srivastava@research.iiit.ac.in](mailto:akansha.srivastava@research.iiit.ac.in)
