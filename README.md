@@ -1,9 +1,6 @@
 # EC_metabolic_subtype_analysis
 Metabolic subtype study for endomaterial cancer
 
-## Workflow
-<img src="https://github.com/Akankxha/EC_metabolic_subtype_analysis/blob/main/Figure1.jpg" width="600" />
-
 
 ## Available Scripts
 `data_preprocessing.r` : Gene experssion data filtering and VST normalization \
@@ -13,6 +10,9 @@ Metabolic subtype study for endomaterial cancer
 `degs.r` : Differencial experssion analysis \
 `prognostic_genes.r` : Univariate cox regression analysis \
 `validation.r` : Validation of subtypes with GEO Datasets 
+
+## Workflow
+<img src="https://github.com/Akankxha/EC_metabolic_subtype_analysis/blob/main/Figure1.jpg" width="500" />
 
 **Notes -** This code repository contains work that are under review for a publication. Below are the details of the study.
 
